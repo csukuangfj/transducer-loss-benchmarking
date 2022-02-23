@@ -26,45 +26,17 @@ class Joiner(nn.Module):
         self.output_dim = output_dim
         self.output_linear = nn.Linear(input_dim, output_dim)
 
-    def forward(
-        self,
-        encoder_out: torch.Tensor,
-        decoder_out: torch.Tensor,
-        encoder_out_len: torch.Tensor,
-        decoder_out_len: torch.Tensor,
-    ) -> torch.Tensor:
+    def forward(self, x) -> torch.Tensor:
         """
         Args:
-          encoder_out:
-            Output from the encoder. Its shape is (N, T, self.input_dim).
-          decoder_out:
-            Output from the decoder. Its shape is (N, U, self.input_dim).
+          x:
+            It can be either a 2-D tensor of shape (sum_all_TU, self.input_dim)
+            or a 4-D tensor of shape (N, T, U, self.input_dim).
         Returns:
-          Return a tensor of shape (sum_all_TU, self.output_dim).
+          Return a tensor of shape (sum_all_TU, self.output_dim) if x
+          is a 2-D tensor. Otherwise, return a tensor of shape
+          (N, T, U, self.output_dim).
         """
-        assert encoder_out.ndim == decoder_out.ndim == 3
-        assert encoder_out.size(0) == decoder_out.size(0)
-        assert encoder_out.size(2) == self.input_dim
-        assert decoder_out.size(2) == self.input_dim
-
-        N = encoder_out.size(0)
-
-        encoder_out_list = [
-            encoder_out[i, : encoder_out_len[i], :] for i in range(N)
-        ]
-
-        decoder_out_list = [
-            decoder_out[i, : decoder_out_len[i], :] for i in range(N)
-        ]
-
-        x = [
-            e.unsqueeze(1) + d.unsqueeze(0)
-            for e, d in zip(encoder_out_list, decoder_out_list)
-        ]
-
-        x = [p.reshape(-1, self.input_dim) for p in x]
-        x = torch.cat(x)
-
         activations = torch.tanh(x)
 
         logits = self.output_linear(activations)
