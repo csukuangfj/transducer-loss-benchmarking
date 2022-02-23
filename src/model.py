@@ -15,14 +15,13 @@
 # limitations under the License.
 
 import random
-from typing import Optional
 
 import k2
 import torch
 import torch.nn as nn
-from encoder_interface import EncoderInterface
-
 from icefall.utils import add_sos
+
+from encoder_interface import EncoderInterface
 
 
 class Transducer(nn.Module):
@@ -35,8 +34,6 @@ class Transducer(nn.Module):
         encoder: EncoderInterface,
         decoder: nn.Module,
         joiner: nn.Module,
-        decoder_giga: Optional[nn.Module] = None,
-        joiner_giga: Optional[nn.Module] = None,
     ):
         """
         Args:
@@ -53,32 +50,21 @@ class Transducer(nn.Module):
             It has two inputs with shapes: (N, T, C) and (N, U, C). Its
             output shape is (N, T, U, C). Note that its output contains
             unnormalized probs, i.e., not processed by log-softmax.
-          decoder_giga:
-            The decoder for the GigaSpeech dataset.
-          joiner_giga:
-            The joiner for the GigaSpeech dataset.
         """
         super().__init__()
         assert isinstance(encoder, EncoderInterface), type(encoder)
         assert hasattr(decoder, "blank_id")
-
-        if decoder_giga is not None:
-            assert hasattr(decoder_giga, "blank_id")
 
         self.encoder = encoder
 
         self.decoder = decoder
         self.joiner = joiner
 
-        self.decoder_giga = decoder_giga
-        self.joiner_giga = joiner_giga
-
     def forward(
         self,
         x: torch.Tensor,
         x_lens: torch.Tensor,
         y: k2.RaggedTensor,
-        libri: bool = True,
         modified_transducer_prob: float = 0.0,
     ) -> torch.Tensor:
         """
@@ -91,9 +77,6 @@ class Transducer(nn.Module):
           y:
             A ragged tensor with 2 axes [utt][label]. It contains labels of each
             utterance.
-          libri:
-            True to use the decoder and joiner for the LibriSpeech dataset.
-            False to use the decoder and joiner for the GigaSpeech dataset.
           modified_transducer_prob:
             The probability to use modified transducer loss.
         Returns:
@@ -118,17 +101,10 @@ class Transducer(nn.Module):
         sos_y_padded = sos_y.pad(mode="constant", padding_value=blank_id)
         sos_y_padded = sos_y_padded.to(torch.int64)
 
-        if libri:
-            decoder = self.decoder
-            joiner = self.joiner
-        else:
-            decoder = self.decoder_giga
-            joiner = self.joiner_giga
-
-        decoder_out = decoder(sos_y_padded)
+        decoder_out = self.decoder(sos_y_padded)
 
         # +1 here since a blank is prepended to each utterance.
-        logits = joiner(
+        logits = self.joiner(
             encoder_out=encoder_out,
             decoder_out=decoder_out,
             encoder_out_len=x_lens,

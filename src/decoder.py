@@ -28,8 +28,6 @@ class Decoder(nn.Module):
     It removes the recurrent connection from the decoder, i.e., the prediction
     network. Different from the above paper, it adds an extra Conv1d
     right after the embedding layer.
-
-    TODO: Implement https://arxiv.org/pdf/2109.07513.pdf
     """
 
     def __init__(
