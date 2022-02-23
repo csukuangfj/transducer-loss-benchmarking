@@ -1,6 +1,6 @@
 # Introduction
 
-This repo tries to benchmark the following implementation of
+This repo tries to benchmark the following implementations of
 transducer loss in terms of speed and memory consumption:
 
 - [k2][k2]
