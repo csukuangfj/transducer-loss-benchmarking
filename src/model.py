@@ -131,6 +131,8 @@ class Transducer(nn.Module):
             forward_impl = self._forward_with_optimized_transducer
         elif kind == "torchaudio":
             forward_impl = self._forward_with_torchaudio
+        elif kind == "k2":
+            forward_impl = self._forward_with_k2
         else:
             assert False, f"{kind} is not implemented yet"
 
@@ -159,10 +161,12 @@ class Transducer(nn.Module):
             frames in `encoder_out` before padding.
           decoder_out:
             Output from the decoder. It is a 3-D tensor of shape (N, U, C).
-          decoder_out_lens:
-            A 1-D tensor of shape (N,). It specifies the number of valid
-            frames in `decoder_out_lens`. Note: The prepending blank symbol
-            is also counted.
+          y_padded:
+            A 2-D tensor of shape (N, U-1). Note it is not pre-pended with
+            a blank.
+          y_lens:
+            A 1-D tensor of shape (N,) containing valid length of each sequence
+            in `y_padded`.
         """
         assert encoder_out.ndim == decoder_out.ndim == 3
         assert encoder_out.size(0) == decoder_out.size(0)
@@ -221,10 +225,12 @@ class Transducer(nn.Module):
             frames in `encoder_out` before padding.
           decoder_out:
             Output from the decoder. It is a 3-D tensor of shape (N, U, C).
-          decoder_out_lens:
-            A 1-D tensor of shape (N,). It specifies the number of valid
-            frames in `decoder_out_lens`. Note: The prepending blank symbol
-            is also counted.
+          y_padded:
+            A 2-D tensor of shape (N, U-1). Note it is not pre-pended with
+            a blank.
+          y_lens:
+            A 1-D tensor of shape (N,) containing valid length of each sequence
+            in `y_padded`.
         """
         assert encoder_out.ndim == decoder_out.ndim == 3
         assert encoder_out.size(0) == decoder_out.size(0)
@@ -245,6 +251,58 @@ class Transducer(nn.Module):
             logit_lengths=encoder_out_lens,
             target_lengths=y_lens,
             blank=self.decoder.blank_id,
+            reduction="sum",
+        )
+
+        return loss
+
+    def _forward_with_k2(
+        self,
+        encoder_out: torch.Tensor,
+        encoder_out_lens: torch.Tensor,
+        decoder_out: torch.Tensor,
+        y_padded: torch.Tensor,
+        y_lens: torch.Tensor,
+    ):
+        """
+        Args:
+          encoder_out:
+            Output from the encoder. It is a 3-D tensor of shape (N, T, C).
+          encoder_out_lens:
+            A 1-D tensor of shape (N,). It specifies the number of valid
+            frames in `encoder_out` before padding.
+          decoder_out:
+            Output from the decoder. It is a 3-D tensor of shape (N, U, C).
+          y_padded:
+            A 2-D tensor of shape (N, U-1). Note it is not pre-pended with
+            a blank.
+          y_lens:
+            A 1-D tensor of shape (N,) containing valid length of each sequence
+            in `y_padded`.
+        """
+        assert encoder_out.ndim == decoder_out.ndim == 3
+        assert encoder_out.size(0) == decoder_out.size(0)
+        assert encoder_out.size(2) == decoder_out.size(2)
+
+        encoder_out = encoder_out.unsqueeze(2)
+        # Now encoder_out is (N, T, 1, C)
+
+        decoder_out = decoder_out.unsqueeze(1)
+        # Now decoder_out is (N, 1, U, C)
+
+        x = encoder_out + decoder_out
+        logits = self.joiner(x)
+
+        begin = torch.zeros_like(y_lens)
+        boundary = torch.stack(
+            [begin, begin, y_lens, encoder_out_lens], dim=1
+        ).to(torch.int64)
+
+        loss = k2.rnnt_loss(
+            logits=logits,
+            symbols=y_padded.to(torch.int64),
+            termination_symbol=self.decoder.blank_id,
+            boundary=boundary,
             reduction="sum",
         )
 
