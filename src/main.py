@@ -19,6 +19,7 @@
 
 import argparse
 import logging
+import sys
 from pathlib import Path
 from typing import Tuple
 
@@ -69,7 +70,7 @@ def get_parser():
     parser.add_argument(
         "--num-epochs",
         type=int,
-        default=30,
+        default=1,
         help="Number of epochs to train.",
     )
 
@@ -185,6 +186,9 @@ def train_one_epoch(
     tot_loss = MetricsTracker()
 
     for batch_idx, batch in enumerate(train_dl):
+        if batch_idx > 200:
+            sys.exit(0)
+
         params.batch_idx_train += 1
         batch_size = len(batch["supervisions"]["text"])
 
