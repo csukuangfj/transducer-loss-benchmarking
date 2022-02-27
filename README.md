@@ -8,10 +8,14 @@ transducer loss in terms of speed and memory consumption:
 - [warp-transducer][warp-transducer]
 - [optimized_transducer][optimized_transducer]
 
+The benchmark results are saved in <https://huggingface.co/csukuangfj/transducer-loss-benchmarking>
+
 **TODOs**
 - [ ] Describe the steps for setting up the environment
 - [ ] Describe the steps to reproduce the results
 - [ ] ... ...
+
+
 
 [k2]: http://github.com/k2-fsa/k2
 [torchaudio]: https://github.com/pytorch/audio
