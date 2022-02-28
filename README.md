@@ -163,7 +163,7 @@ The following table summarizes the results from the above table
 |  Name                  |  Average step time (us)  | Peak memory usage (MB)  |
 |------------------------|-------------------------:|------------------------:|
 | `torchaudio`           | 601447                   | 12959.2                 |
-| `k2`                   | 274408                   | 15106.5                 |
+| `k2`                   | 274407                   | 15106.5                 |
 | `k2 pruned`            |  38112                   | 2647.8                  |
 | `optimized_transducer` | 567684                   | 10903.1                 |
 
