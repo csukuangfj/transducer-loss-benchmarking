@@ -121,6 +121,14 @@ tensorboard --logdir ./log/k2-pruned-30 --port 6007
 |k2 pruned | ![](pic/k2-pruned-30-overview.png) | ![](pic/k2-pruned-30-memory.png)|
 |`optimized_transducer`| ![](pic/optimized_transducer-30-overview.png) | ![](pic/optimized_transducer-30-memory.png)|
 
+The following table summarizes the results from the above table
+
+|  Name                  |  Average step time (us)  | Peak memory usage (MB)  |
+|------------------------|-------------------------:|------------------------:|
+| `torchaudio`           | 544241                   | 18921.8                 |
+| `k2`                   | 386808                   | 22056.9                 |
+| `k2 pruned`            |  63395                   | 3820.3                  |
+| `optimized_transducer` | 376954                   | 7495.9                  |
 
 
 [k2]: http://github.com/k2-fsa/k2
