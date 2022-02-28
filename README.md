@@ -137,6 +137,46 @@ Some notes to take away:
 - k2 pruned loss is the fastest and requires least memory
 - You can use **a larger batch size** during training when using k2 pruned loss
 
+
+# Sort utterances by duration before batching them up
+
+To minimize the effect of padding, we also benchmark the implementations by sorting
+utterances by duration before batching them up.
+
+You can use the option `--sort-utterance`, e.g., `./benchmark_torchaudio.py --sort-utterance true`,
+while running the benchmarks.
+
+The following table visualizes the benchmark results for sorted utterances:
+
+|  Name     |  Overview  | Memory  |
+|-----------|------------|---------|
+|torchaudio | ![](pic/torchaudio-max-frames-10k-overview.png) | ![](pic/torchaudio-max-frames-10k-memory.png)|
+|k2 | ![](pic/k2-max-frames-10k-overview.png) | ![](pic/k2-max-frames-10k-memory.png)|
+|k2 pruned | ![](pic/k2-pruned-max-frames-10k-overview.png) | ![](pic/k2-pruned-max-frames-10k-memory.png)|
+|`optimized_transducer`| ![](pic/optimized_transducer-max-frames-10k-overview.png) | ![](pic/optimized_transducer-max-frames-10k-memory.png)|
+
+**Note**: A value 10k for max frames is selected since the value 11k causes CUDA OOM for k2 unpruned loss.
+Max frames with 10k means that the number of frames in a batch before padding is at most 10k.
+
+The following table summarizes the results from the above table
+
+|  Name                  |  Average step time (us)  | Peak memory usage (MB)  |
+|------------------------|-------------------------:|------------------------:|
+| `torchaudio`           | 601447                   | 12959.2                 |
+| `k2`                   | 274407                   | 15106.5                 |
+| `k2 pruned`            |  38112                   | 2647.8                  |
+| `optimized_transducer` | 567684                   | 10903.1                 |
+
+
+Some notes to take away:
+
+- For the unpruned case, `k2` is the fastest one, though it takes most memory
+- `optimized_transducer` still consumes least memory for the unpruned case even
+  if it tries to minimize the paddings
+- k2 pruned loss is again the fastest and requires least memory
+- You can use **a larger batch size** during training when using k2 pruned loss
+
+
 [k2]: http://github.com/k2-fsa/k2
 [torchaudio]: https://github.com/pytorch/audio
 [optimized_transducer]: https://github.com/csukuangfj/optimized_transducer
