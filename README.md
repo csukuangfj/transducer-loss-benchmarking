@@ -135,6 +135,7 @@ Some notes to take away:
 
 - For the unpruned case, `optimized_transducer` is the fastest one and takes least memory
 - k2 pruned loss is the fastest and requires least memory
+- You can use **a larger batch size** during training when using k2 pruned loss
 
 [k2]: http://github.com/k2-fsa/k2
 [torchaudio]: https://github.com/pytorch/audio
