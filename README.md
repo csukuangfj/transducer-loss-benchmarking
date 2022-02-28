@@ -9,7 +9,7 @@ transducer loss in terms of speed and memory consumption:
 
 The benchmark results are saved in <https://huggingface.co/csukuangfj/transducer-loss-benchmarking>
 
-## Environment setup
+# Environment setup
 
 ## Install torchaudio
 Please refer to <https://github.com/pytorch/audio> to install torchaudio.
@@ -35,7 +35,7 @@ pip install torch-tb-profiler
 Please refer to <https://github.com/pytorch/kineto/tree/main/tb_plugin> for other alternatives.
 
 
-## Steps to reproduce
+# Steps to get the benchmark results
 
 
 **TODOs**
