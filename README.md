@@ -9,6 +9,12 @@ transducer loss in terms of speed and memory consumption:
 
 The benchmark results are saved in <https://huggingface.co/csukuangfj/transducer-loss-benchmarking>
 
+
+## TODOs
+
+- [ ] Add benchmark results for [warp-transducer][warp-transducer] and [warprnnt_numba][warprnnt_numba]
+
+
 # Environment setup
 
 ## Install torchaudio
@@ -20,10 +26,7 @@ Note: It requires `torchaudio >= 0.10.0`.
 Please refer to <https://k2-fsa.github.io/k2/installation/index.html> to install k2.
 Note: It requires at `k2 >= v1.13`.
 
-**Caution**: Please install a version that is compiled against the version of the PyTorch
-you currently have locally.
-
-## Install PyTorch Profiler TensorBoard Plugin
+## Install PyTorch profiler TensorBoard plugin
 
 ```bash
 pip install torch-tb-profiler
@@ -71,7 +74,7 @@ We have the following benchmarks so far:
 | `k2`                      | `./benchmark_k2.py`         | `./log/k2-30`                   |
 | `k2 pruned loss`          | `./benchmark_k2_pruned.py`  | `./log/k2-pruned-30`            |
 
-The first column show the names of different implementations of transducer loss, the second
+The first column shows the names of different implementations of transducer loss, the second
 column gives the command to run the benchmark, and the last column is the
 output folder containing the results of running the corresponding script.
 
@@ -108,19 +111,15 @@ You can use tensorboard to visualize the benchmark results. For instance, to vis
 the results for `k2 pruned loss`, you can use
 
 ```bash
-tensorboard --logdir ./log/k2-pruned-30` --port 6007
+tensorboard --logdir ./log/k2-pruned-30 --port 6007
 ```
 
 |  Name     |  Overview  | Memory  |
 |-----------|------------|---------|
 |torchaudio | ![](pic/torchaudio-30-overview.png) | ![](pic/torchaudio-30-memory.png)|
-
-
-
-# TODOs
-
-- [ ] Add benchmark results for [warp-transducer][warp-transducer] and [warprnnt_numba][warprnnt_numba]
-- [ ] ... ...
+|k2 | ![](pic/k2-30-overview.png) | ![](pic/k2-30-memory.png)|
+|k2 pruned | ![](pic/k2-pruned-overview.png) | ![](pic/k2-pruned-30-memory.png)|
+|`optimized_transducer`| ![](pic/optimized_transducer-overview.png) | ![](pic/optimized_transducer-30-memory.png)|
 
 
 
