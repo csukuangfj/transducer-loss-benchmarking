@@ -118,8 +118,8 @@ tensorboard --logdir ./log/k2-pruned-30 --port 6007
 |-----------|------------|---------|
 |torchaudio | ![](pic/torchaudio-30-overview.png) | ![](pic/torchaudio-30-memory.png)|
 |k2 | ![](pic/k2-30-overview.png) | ![](pic/k2-30-memory.png)|
-|k2 pruned | ![](pic/k2-pruned-overview.png) | ![](pic/k2-pruned-30-memory.png)|
-|`optimized_transducer`| ![](pic/optimized_transducer-overview.png) | ![](pic/optimized_transducer-30-memory.png)|
+|k2 pruned | ![](pic/k2-pruned-30-overview.png) | ![](pic/k2-pruned-30-memory.png)|
+|`optimized_transducer`| ![](pic/optimized_transducer-30-overview.png) | ![](pic/optimized_transducer-30-memory.png)|
 
 
 
