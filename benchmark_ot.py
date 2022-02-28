@@ -18,11 +18,30 @@
 # limitations under the License.
 
 
+import argparse
+
 import optimized_transducer
 import torch
 from torch.profiler import ProfilerActivity, record_function
 
-from utils import Joiner, ShapeGenerator, generate_data
+from utils import (
+    Joiner,
+    ShapeGenerator,
+    SortedShapeGenerator,
+    generate_data,
+    str2bool,
+)
+
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--sort-utterance",
+        type=str2bool,
+        help="True to sort utterance duration before batching them up",
+    )
+
+    return parser.parse_args()
 
 
 def compute_loss(logits, logit_lengths, targets, target_lengths):
@@ -41,6 +60,8 @@ def compute_loss(logits, logit_lengths, targets, target_lengths):
 
 
 def main():
+    args = get_args()
+
     device = torch.device("cpu")
     if torch.cuda.is_available():
         device = torch.device("cuda", 0)
@@ -49,15 +70,23 @@ def main():
     encoder_out_dim = 512
     vocab_size = 500
 
-    # won't OOM when it's 50. Set it to 30 as torchaudio is using 30
-    batch_size = 30
+    if args.sort_utterance:
+        max_frames = 10000
+        suffix = f"max-frames-{max_frames}"
+    else:
+        # won't OOM when it's 50. Set it to 30 as torchaudio is using 30
+        batch_size = 30
+        suffix = batch_size
 
     joiner = Joiner(encoder_out_dim, vocab_size)
     joiner.to(device)
 
-    shape_generator = ShapeGenerator(batch_size)
+    if args.sort_utterance:
+        shape_generator = SortedShapeGenerator(max_frames)
+    else:
+        shape_generator = ShapeGenerator(batch_size)
 
-    print("Benchmarking started")
+    print(f"Benchmarking started (Sort utterance {args.sort_utterance})")
 
     prof = torch.profiler.profile(
         activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
@@ -65,7 +94,7 @@ def main():
             wait=10, warmup=10, active=20, repeat=2
         ),
         on_trace_ready=torch.profiler.tensorboard_trace_handler(
-            f"./log/optimized_transducer-{batch_size}"
+            f"./log/optimized_transducer-{suffix}"
         ),
         record_shapes=True,
         with_stack=True,
@@ -126,7 +155,7 @@ def main():
         )
     )
 
-    with open(f"optimized_transducer-{batch_size}.txt", "w") as f:
+    with open(f"optimized_transducer-{suffix}.txt", "w") as f:
         f.write(s + "\n")
 
 
