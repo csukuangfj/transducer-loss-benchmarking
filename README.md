@@ -131,6 +131,11 @@ The following table summarizes the results from the above table
 | `optimized_transducer` | 376954                   | 7495.9                  |
 
 
+Some notes to take away:
+
+- For the unpruned case, `optimized_transducer` is the fastest one and takes least memory
+- k2 pruned loss is the fastest and requires least memory
+
 [k2]: http://github.com/k2-fsa/k2
 [torchaudio]: https://github.com/pytorch/audio
 [optimized_transducer]: https://github.com/csukuangfj/optimized_transducer
