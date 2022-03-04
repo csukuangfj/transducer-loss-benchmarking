@@ -6,18 +6,20 @@ transducer loss in terms of speed and memory consumption:
 - [k2][k2]
 - [torchaudio][torchaudio]
 - [optimized_transducer][optimized_transducer]
+- [warprnnt_numba][warprnnt_numba]
 
 The benchmark results are saved in <https://huggingface.co/csukuangfj/transducer-loss-benchmarking>
 
 
 ## TODOs
 
-- [ ] Add benchmark results for [warp-transducer][warp-transducer] and [warprnnt_numba][warprnnt_numba]
+- [ ] Add benchmark results for [warp-transducer][warp-transducer]
 
 
 # Environment setup
 
 ## Install torchaudio
+
 Please refer to <https://github.com/pytorch/audio> to install torchaudio.
 Note: It requires `torchaudio >= 0.10.0`.
 
@@ -25,6 +27,22 @@ Note: It requires `torchaudio >= 0.10.0`.
 
 Please refer to <https://k2-fsa.github.io/k2/installation/index.html> to install k2.
 Note: It requires at `k2 >= v1.13`.
+
+## Install `optimized_transducer`
+
+```bash
+pip install optimized_transducer
+```
+
+Please refer to <https://github.com/csukuangfj/optimized_transducer> for other alternatives.
+
+## Install `warprnnt_numba`
+
+```bash
+pip install --upgrade git+https://github.com/titu1994/warprnnt_numba
+```
+
+Please refer to <https://github.com/titu1994/warprnnt_numba> for more methods.
 
 ## Install PyTorch profiler TensorBoard plugin
 
@@ -67,12 +85,13 @@ very handy.
 We have the following benchmarks so far:
 
 
-| Name                      |  Script                     | Benchmark Result folder         |
-|---------------------------|-----------------------------|---------------------------------|
-| `torchaudio`              | `./benchmark_torchaudio.py` | `./log/torchaudio-30`           |
-| `optimized_transducer`    | `./benchmark_ot.py`         | `./log/optimized_transducer-30` |
-| `k2`                      | `./benchmark_k2.py`         | `./log/k2-30`                   |
-| `k2 pruned loss`          | `./benchmark_k2_pruned.py`  | `./log/k2-pruned-30`            |
+| Name                      |  Script                          | Benchmark Result folder         |
+|---------------------------|----------------------------------|---------------------------------|
+| `torchaudio`              | `./benchmark_torchaudio.py`      | `./log/torchaudio-30`           |
+| `optimized_transducer`    | `./benchmark_ot.py`              | `./log/optimized_transducer-30` |
+| `k2`                      | `./benchmark_k2.py`              | `./log/k2-30`                   |
+| `k2 pruned loss`          | `./benchmark_k2_pruned.py`       | `./log/k2-pruned-30`            |
+| `warprnnt_numba`          | `./benchmark_warprnnt_numba.py`  | `./log/warprnnt_numba-30`       |
 
 The first column shows the names of different implementations of transducer loss, the second
 column gives the command to run the benchmark, and the last column is the
@@ -120,6 +139,7 @@ tensorboard --logdir ./log/k2-pruned-30 --port 6007
 |k2 | ![](pic/k2-30-overview.png) | ![](pic/k2-30-memory.png)|
 |k2 pruned | ![](pic/k2-pruned-30-overview.png) | ![](pic/k2-pruned-30-memory.png)|
 |`optimized_transducer`| ![](pic/optimized_transducer-30-overview.png) | ![](pic/optimized_transducer-30-memory.png)|
+|`warprnnt_numba`| ![](pic/warprnnt_numba-30-overview.png) | ![](pic/warprnnt_numba-30-memory.png)|
 
 The following table summarizes the results from the above table
 
@@ -127,14 +147,15 @@ The following table summarizes the results from the above table
 |------------------------|-------------------------:|------------------------:|
 | `torchaudio`           | 544241                   | 18921.8                 |
 | `k2`                   | 386808                   | 22056.9                 |
-| `k2 pruned`            |  63395                   | 3820.3                  |
-| `optimized_transducer` | 376954                   | 7495.9                  |
+| `k2 pruned`            |  63395                   |  3820.3                 |
+| `optimized_transducer` | 376954                   |  7495.9                 |
+| `warprnnt_numba`       | 299385                   | 19072.7                 |
 
 
 Some notes to take away:
 
-- For the unpruned case, `optimized_transducer` is the fastest one and takes least memory
-- k2 pruned loss is the fastest and requires least memory
+- For the unpruned case, `warprnnt_numba` is the fastest while `optimized_transducer` takes the least memory
+- k2 pruned loss is the fastest and requires the least memory
 - You can use **a larger batch size** during training when using k2 pruned loss
 
 
@@ -154,6 +175,7 @@ The following table visualizes the benchmark results for sorted utterances:
 |k2 | ![](pic/k2-max-frames-10k-overview.png) | ![](pic/k2-max-frames-10k-memory.png)|
 |k2 pruned | ![](pic/k2-pruned-max-frames-10k-overview.png) | ![](pic/k2-pruned-max-frames-10k-memory.png)|
 |`optimized_transducer`| ![](pic/optimized_transducer-max-frames-10k-overview.png) | ![](pic/optimized_transducer-max-frames-10k-memory.png)|
+|`warprnnt_numba`| ![](pic/warprnnt_numba-max-frames-10k-overview.png) | ![](pic/warprnnt_numba-max-frames-10k-memory.png)|
 
 **Note**: A value 10k for max frames is selected since the value 11k causes CUDA OOM for k2 unpruned loss.
 Max frames with 10k means that the number of frames in a batch before padding is at most 10k.
@@ -164,16 +186,16 @@ The following table summarizes the results from the above table
 |------------------------|-------------------------:|------------------------:|
 | `torchaudio`           | 601447                   | 12959.2                 |
 | `k2`                   | 274407                   | 15106.5                 |
-| `k2 pruned`            |  38112                   | 2647.8                  |
+| `k2 pruned`            |  38112                   |  2647.8                 |
 | `optimized_transducer` | 567684                   | 10903.1                 |
+| `warprnnt_numba`       | 229340                   | 13061.8                 |
 
 
 Some notes to take away:
 
-- For the unpruned case, `k2` is the fastest one, though it takes most memory
-- `optimized_transducer` still consumes least memory for the unpruned case even
-  if it tries to minimize the paddings
-- k2 pruned loss is again the fastest and requires least memory
+- For the unpruned case, `warprnnt_numba` is the fastest one
+- `optimized_transducer` still consumes the least memory for the unpruned case
+- k2 pruned loss is again the fastest and requires the least memory
 - You can use **a larger batch size** during training when using k2 pruned loss
 
 
