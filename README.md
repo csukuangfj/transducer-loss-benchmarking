@@ -7,14 +7,12 @@ transducer loss in terms of speed and memory consumption:
 - [torchaudio][torchaudio]
 - [optimized_transducer][optimized_transducer]
 - [warprnnt_numba][warprnnt_numba]
+- [warp-transducer][warp-transducer-espnet]
 
 The benchmark results are saved in <https://huggingface.co/csukuangfj/transducer-loss-benchmarking>
 
-
-## TODOs
-
-- [ ] Add benchmark results for [warp-transducer][warp-transducer]
-
+**WARNING**: Instead of using warp-transducer from <https://github.com/HawkAaron/warp-transducer>,
+we use a version that is used and maintained by ESPnet developers.
 
 # Environment setup
 
@@ -43,6 +41,36 @@ pip install --upgrade git+https://github.com/titu1994/warprnnt_numba
 ```
 
 Please refer to <https://github.com/titu1994/warprnnt_numba> for more methods.
+
+## Install warp-transducer
+
+```bash
+git clone --single-branch --branch espnet_v1.1 https://github.com/b-flo/warp-transducer.git
+cd warp-transducer
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j warprnnt
+cd ../pytorch_binding
+
+# Caution: You may have to modify CUDA_HOME to match your CUDA installation
+export CUDA_HOME=/usr/local/cuda
+export C_INCLUDE_PATH=$CUDA_HOME/include:${C_INCLUDE_PATH}
+export CPLUS_INCLUDE_PATH=$CUDA_HOME/include:${CPLUS_INCLUDE_PATH}
+
+python3 setup.py build
+
+# Then add /path/to/warp-transducer/pytorch_binding/build/lib.linux-x86_64-3.8
+# to your PYTHONPATH
+export PYTHONPATH=/ceph-fj/fangjun/open-source-2/warp-transducer/pytorch_binding/build/lib.linux-x86_64-3.8:$PYTHONPATH
+
+# To test that warp-transducer was compiled and configured correctly, run the following commands
+cd $HOME
+python3 -c "import warprnnt_pytorch; print(warprnnt_pytorch.RNNTLoss)"
+# It should print something like below:
+#   <class 'warprnnt_pytorch.RNNTLoss'>
+
+# Caution: We did not used any **install** command.
+```
 
 ## Install PyTorch profiler TensorBoard plugin
 
@@ -92,6 +120,7 @@ We have the following benchmarks so far:
 | `k2`                      | `./benchmark_k2.py`              | `./log/k2-30`                   |
 | `k2 pruned loss`          | `./benchmark_k2_pruned.py`       | `./log/k2-pruned-30`            |
 | `warprnnt_numba`          | `./benchmark_warprnnt_numba.py`  | `./log/warprnnt_numba-30`       |
+| `warp-transducer`         | `./benchmark_warp_transducer.py` | `./log/warp-transducer-30`      |
 
 The first column shows the names of different implementations of transducer loss, the second
 column gives the command to run the benchmark, and the last column is the
@@ -140,6 +169,7 @@ tensorboard --logdir ./log/k2-pruned-30 --port 6007
 |k2 pruned | ![](pic/k2-pruned-30-overview.png) | ![](pic/k2-pruned-30-memory.png)|
 |`optimized_transducer`| ![](pic/optimized_transducer-30-overview.png) | ![](pic/optimized_transducer-30-memory.png)|
 |`warprnnt_numba`| ![](pic/warprnnt_numba-30-overview.png) | ![](pic/warprnnt_numba-30-memory.png)|
+|`warp-transducer`| ![](pic/warp-transducer-30-overview.png) | ![](pic/warp-transducer-30-memory.png)|
 
 The following table summarizes the results from the above table
 
@@ -150,11 +180,12 @@ The following table summarizes the results from the above table
 | `k2 pruned`            |  63395                   |  3820.3                 |
 | `optimized_transducer` | 376954                   |  7495.9                 |
 | `warprnnt_numba`       | 299385                   | 19072.7                 |
+| `warp-transducer`      | 275852                   | 19072.6                 |
 
 
 Some notes to take away:
 
-- For the unpruned case, `warprnnt_numba` is the fastest while `optimized_transducer` takes the least memory
+- For the unpruned case, `warp-transducer` is the fastest while `optimized_transducer` takes the least memory
 - k2 pruned loss is the fastest and requires the least memory
 - You can use **a larger batch size** during training when using k2 pruned loss
 
@@ -176,6 +207,7 @@ The following table visualizes the benchmark results for sorted utterances:
 |k2 pruned | ![](pic/k2-pruned-max-frames-10k-overview.png) | ![](pic/k2-pruned-max-frames-10k-memory.png)|
 |`optimized_transducer`| ![](pic/optimized_transducer-max-frames-10k-overview.png) | ![](pic/optimized_transducer-max-frames-10k-memory.png)|
 |`warprnnt_numba`| ![](pic/warprnnt_numba-max-frames-10k-overview.png) | ![](pic/warprnnt_numba-max-frames-10k-memory.png)|
+|`warp-transducer`| ![](pic/warp-transducer-max-frames-10k-overview.png) | ![](pic/warp-transducer-max-frames-10k-memory.png)|
 
 **Note**: A value 10k for max frames is selected since the value 11k causes CUDA OOM for k2 unpruned loss.
 Max frames with 10k means that the number of frames in a batch before padding is at most 10k.
@@ -189,11 +221,12 @@ The following table summarizes the results from the above table
 | `k2 pruned`            |  38112                   |  2647.8                 |
 | `optimized_transducer` | 567684                   | 10903.1                 |
 | `warprnnt_numba`       | 229340                   | 13061.8                 |
+| `warp-transducer`      | 210772                   | 13061.8                 |
 
 
 Some notes to take away:
 
-- For the unpruned case, `warprnnt_numba` is the fastest one
+- For the unpruned case, `warp-transducer` is the fastest one
 - `optimized_transducer` still consumes the least memory for the unpruned case
 - k2 pruned loss is again the fastest and requires the least memory
 - You can use **a larger batch size** during training when using k2 pruned loss
@@ -203,5 +236,6 @@ Some notes to take away:
 [torchaudio]: https://github.com/pytorch/audio
 [optimized_transducer]: https://github.com/csukuangfj/optimized_transducer
 [warp-transducer]: https://github.com/HawkAaron/warp-transducer
+[warp-transducer-espnet]: https://github.com/b-flo/warp-transducer/tree/espnet_v1.1
 [warprnnt_numba]: https://github.com/titu1994/warprnnt_numba
 [LibriSpeech]: https://www.openslr.org/12
