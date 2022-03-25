@@ -9,6 +9,7 @@ transducer loss in terms of speed and memory consumption:
 - [warprnnt_numba][warprnnt_numba]
 - [warp-transducer][warp-transducer-espnet]
 - [warp-rnnt][warp-rnnt]
+- [SpeechBrain][speechbrain]
 
 The benchmark results are saved in <https://huggingface.co/csukuangfj/transducer-loss-benchmarking>
 
@@ -90,7 +91,25 @@ cd $HOME
 python3 -c "import warp_rnnt; print(warp_rnnt.RNNTLoss)"
 # It should print something like below:
 #   <class 'warp_rnnt.RNNTLoss'>
+```
 
+## Install SpeechBrain
+
+**Caution**: You don't need to install SpeechBrain. We have saved the
+file that is for computing RNN-T loss into this repo using the following
+commands:
+
+```bash
+wget https://raw.githubusercontent.com/speechbrain/speechbrain/develop/speechbrain/nnet/loss/transducer_loss.py
+mv transducer_loss.py speechbrain_rnnt_loss.py
+
+echo "# This file is downloaded from https://raw.githubusercontent.com/speechbrain/speechbrain/develop/speechbrain/nnet/loss/transducer_loss.py" >> speechbrain_rnnt_loss.py
+```
+
+Note: You need to install numba in order to use SpeechBrain's RNN-T loss:
+
+```bash
+pip instal numba
 ```
 
 ## Install PyTorch profiler TensorBoard plugin
@@ -143,6 +162,7 @@ We have the following benchmarks so far:
 | `warprnnt_numba`          | `./benchmark_warprnnt_numba.py`  | `./log/warprnnt_numba-30`       |
 | `warp-transducer`         | `./benchmark_warp_transducer.py` | `./log/warp-transducer-30`      |
 | `warp-rnnt`               | `./benchmark_warp_rnnt.py`       | `./log/warp-rnnt-30`            |
+| `SpeechBrain`             | `./benchmark_speechbrain.py`     | `./log/speechbrain-30`          |
 
 The first column shows the names of different implementations of transducer loss, the second
 column gives the command to run the benchmark, and the last column is the
@@ -193,6 +213,7 @@ tensorboard --logdir ./log/k2-pruned-30 --port 6007
 |`warprnnt_numba`| ![](pic/warprnnt_numba-30-overview.png) | ![](pic/warprnnt_numba-30-memory.png)|
 |`warp-transducer`| ![](pic/warp-transducer-30-overview.png) | ![](pic/warp-transducer-30-memory.png)|
 |`warp-rnnt`| ![](pic/warp-rnnt-30-overview.png) | ![](pic/warp-rnnt-30-memory.png)|
+|`SpeechBrain`| ![](pic/speechbrain-30-overview.png) | ![](pic/speechbrain-30-memory.png)|
 
 The following table summarizes the results from the above table
 
@@ -205,6 +226,7 @@ The following table summarizes the results from the above table
 | `warprnnt_numba`       | 299385                   | 19072.7                 |
 | `warp-transducer`      | 275852                   | 19072.6                 |
 | `warp-rnnt`            | 293270                   | 18934.3                 |
+| `SpeechBrain`          | 459406                   | 19072.8                 |
 
 
 Some notes to take away:
@@ -233,6 +255,7 @@ The following table visualizes the benchmark results for sorted utterances:
 |`warprnnt_numba`| ![](pic/warprnnt_numba-max-frames-10k-overview.png) | ![](pic/warprnnt_numba-max-frames-10k-memory.png)|
 |`warp-transducer`| ![](pic/warp-transducer-max-frames-10k-overview.png) | ![](pic/warp-transducer-max-frames-10k-memory.png)|
 |`warp-rnnt`| ![](pic/warp-rnnt-max-frames-10k-overview.png) | ![](pic/warp-rnnt-max-frames-10k-memory.png)|
+|`SpeechBrain`| ![](pic/speechbrain-max-frames-10k-overview.png) | ![](pic/speechbrain-max-frames-10k-memory.png)|
 
 **Note**: A value 10k for max frames is selected since the value 11k causes CUDA OOM for k2 unpruned loss.
 Max frames with 10k means that the number of frames in a batch before padding is at most 10k.
@@ -248,6 +271,7 @@ The following table summarizes the results from the above table
 | `warprnnt_numba`       | 229340                   | 13061.8                 |
 | `warp-transducer`      | 210772                   | 13061.8                 |
 | `warp-rnnt`            | 216547                   | 12968.2                 |
+| `SpeechBrain`          | 263753                   | 13063.4                 |
 
 
 Some notes to take away:
@@ -266,3 +290,4 @@ Some notes to take away:
 [warprnnt_numba]: https://github.com/titu1994/warprnnt_numba
 [LibriSpeech]: https://www.openslr.org/12
 [warp-rnnt]: https://github.com/1ytic/warp-rnnt/
+[speechbrain]: https://github.com/speechbrain/speechbrain
