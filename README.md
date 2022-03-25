@@ -95,8 +95,9 @@ python3 -c "import warp_rnnt; print(warp_rnnt.RNNTLoss)"
 
 ## Install SpeechBrain
 
-**Caution**: You don't need to install SpeechBrain. We have extracted the
-file that is for computing RNN-T loss in this repo using the following commands:
+**Caution**: You don't need to install SpeechBrain. We have saved the
+file that is for computing RNN-T loss into this repo using the following
+commands:
 
 ```bash
 wget https://raw.githubusercontent.com/speechbrain/speechbrain/develop/speechbrain/nnet/loss/transducer_loss.py
