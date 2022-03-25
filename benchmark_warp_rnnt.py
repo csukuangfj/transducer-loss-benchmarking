@@ -150,7 +150,7 @@ def main():
         )
     )
 
-    with open(f"warp-transducer-{suffix}.txt", "w") as f:
+    with open(f"warp-rnnt-{suffix}.txt", "w") as f:
         f.write(s + "\n")
 
 
