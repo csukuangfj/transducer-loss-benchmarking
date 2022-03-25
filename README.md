@@ -8,6 +8,7 @@ transducer loss in terms of speed and memory consumption:
 - [optimized_transducer][optimized_transducer]
 - [warprnnt_numba][warprnnt_numba]
 - [warp-transducer][warp-transducer-espnet]
+- [warp-rnnt][warp-rnnt]
 
 The benchmark results are saved in <https://huggingface.co/csukuangfj/transducer-loss-benchmarking>
 
@@ -72,6 +73,26 @@ python3 -c "import warprnnt_pytorch; print(warprnnt_pytorch.RNNTLoss)"
 # Caution: We did not used any **install** command.
 ```
 
+## Install warp_rnnt
+```bash
+git clone https://github.com/1ytic/warp-rnnt
+cd warp-rnnt/pytorch_binding
+
+# Caution: You may have to modify CUDA_HOME to match your CUDA installation
+export CUDA_HOME=/usr/local/cuda
+export C_INCLUDE_PATH=$CUDA_HOME/include:$CUDA_HOME/targets/x86_64-linux/include:$C_INCLUDE_PATH
+export CPLUS_INCLUDE_PATH=$CUDA_HOME/include:$CUDA_HOME/targets/x86_64-linux/include:$CPLUS_INCLUDE_PATH
+python3 setup.py build
+python3 setup.py install
+
+# To test that warp-rnnt was installed correctly, run the following commands:
+cd $HOME
+python3 -c "import warp_rnnt; print(warp_rnnt.RNNTLoss)"
+# It should print something like below:
+#   <class 'warp_rnnt.RNNTLoss'>
+
+```
+
 ## Install PyTorch profiler TensorBoard plugin
 
 ```bash
@@ -121,6 +142,7 @@ We have the following benchmarks so far:
 | `k2 pruned loss`          | `./benchmark_k2_pruned.py`       | `./log/k2-pruned-30`            |
 | `warprnnt_numba`          | `./benchmark_warprnnt_numba.py`  | `./log/warprnnt_numba-30`       |
 | `warp-transducer`         | `./benchmark_warp_transducer.py` | `./log/warp-transducer-30`      |
+| `warp-rnnt`               | `./benchmark_warp_rnnt.py`       | `./log/warp-rnnt-30`            |
 
 The first column shows the names of different implementations of transducer loss, the second
 column gives the command to run the benchmark, and the last column is the
@@ -170,6 +192,7 @@ tensorboard --logdir ./log/k2-pruned-30 --port 6007
 |`optimized_transducer`| ![](pic/optimized_transducer-30-overview.png) | ![](pic/optimized_transducer-30-memory.png)|
 |`warprnnt_numba`| ![](pic/warprnnt_numba-30-overview.png) | ![](pic/warprnnt_numba-30-memory.png)|
 |`warp-transducer`| ![](pic/warp-transducer-30-overview.png) | ![](pic/warp-transducer-30-memory.png)|
+|`warp-rnnt`| ![](pic/warp-rnnt-30-overview.png) | ![](pic/warp-rnnt-30-memory.png)|
 
 The following table summarizes the results from the above table
 
@@ -181,6 +204,7 @@ The following table summarizes the results from the above table
 | `optimized_transducer` | 376954                   |  7495.9                 |
 | `warprnnt_numba`       | 299385                   | 19072.7                 |
 | `warp-transducer`      | 275852                   | 19072.6                 |
+| `warp-rnnt`            | 293270                   | 18934.3                 |
 
 
 Some notes to take away:
@@ -208,6 +232,7 @@ The following table visualizes the benchmark results for sorted utterances:
 |`optimized_transducer`| ![](pic/optimized_transducer-max-frames-10k-overview.png) | ![](pic/optimized_transducer-max-frames-10k-memory.png)|
 |`warprnnt_numba`| ![](pic/warprnnt_numba-max-frames-10k-overview.png) | ![](pic/warprnnt_numba-max-frames-10k-memory.png)|
 |`warp-transducer`| ![](pic/warp-transducer-max-frames-10k-overview.png) | ![](pic/warp-transducer-max-frames-10k-memory.png)|
+|`warp-rnnt`| ![](pic/warp-rnnt-max-frames-10k-overview.png) | ![](pic/warp-rnnt-max-frames-10k-memory.png)|
 
 **Note**: A value 10k for max frames is selected since the value 11k causes CUDA OOM for k2 unpruned loss.
 Max frames with 10k means that the number of frames in a batch before padding is at most 10k.
@@ -222,6 +247,7 @@ The following table summarizes the results from the above table
 | `optimized_transducer` | 567684                   | 10903.1                 |
 | `warprnnt_numba`       | 229340                   | 13061.8                 |
 | `warp-transducer`      | 210772                   | 13061.8                 |
+| `warp-rnnt`            | 216547                   | 12968.2                 |
 
 
 Some notes to take away:
@@ -239,3 +265,4 @@ Some notes to take away:
 [warp-transducer-espnet]: https://github.com/b-flo/warp-transducer/tree/espnet_v1.1
 [warprnnt_numba]: https://github.com/titu1994/warprnnt_numba
 [LibriSpeech]: https://www.openslr.org/12
+[warp-rnnt]: https://github.com/1ytic/warp-rnnt/
