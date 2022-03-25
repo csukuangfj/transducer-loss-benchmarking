@@ -80,9 +80,6 @@ cd warp-rnnt/pytorch_binding
 
 # Caution: You may have to modify CUDA_HOME to match your CUDA installation
 export CUDA_HOME=/usr/local/cuda
-export C_INCLUDE_PATH=$CUDA_HOME/include:${C_INCLUDE_PATH}
-export CPLUS_INCLUDE_PATH=$CUDA_HOME/include:${CPLUS_INCLUDE_PATH}
-#
 export C_INCLUDE_PATH=$CUDA_HOME/include:$CUDA_HOME/targets/x86_64-linux/include:$C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH=$CUDA_HOME/include:$CUDA_HOME/targets/x86_64-linux/include:$CPLUS_INCLUDE_PATH
 python3 setup.py build
